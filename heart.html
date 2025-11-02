@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>爱的魔法·温馨祝福</title>
+<style>
+  body {
+    background-color: #000;
+    overflow: hidden;
+    font-family: "Arial", sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .tip {
+    position: absolute;
+    padding: 12px 24px;
+    border-radius: 15px;
+    font-size: 20px;
+    color: #fff;
+    max-width: 300px;
+    text-align: center;
+    word-wrap: break-word;
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transition: opacity 0.5s, transform 6s ease-in-out;
+  }
+  .play-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: rgba(255, 51, 102, 0.8);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    box-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+    cursor: pointer;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+
+<audio id="bgm" loop>
+  <!-- 请替换为“爱的魔法”音频的实际可访问链接 -->
+  <source src="https://example.com/love_magic.mp3" type="audio/mpeg">
+  您的浏览器不支持音频播放
+</audio>
+
+<script>
+const tips = [
+    '愿爱如魔法，时刻围绕你身旁！',
+    '爱的魔法，让每一天都闪耀！',
+    '愿魔法般的爱，填满你的世界！',
+    '爱的魔法，让平凡变浪漫！',
+    '愿你被爱的魔法温柔守护！',
+    '爱的魔法，让心跳都变甜！',
+    '愿魔法之爱，伴你岁岁年年！',
+    '爱的魔法，让生活如诗如画！',
+    '愿你是爱的魔法，点亮他人的光！',
+    '爱的魔法，让每个瞬间都难忘！'
+];
+
+const bgColors = [
+    'rgba(255, 51, 102, 0.8)', 'rgba(255, 102, 153, 0.8)',
+    'rgba(255, 0, 51, 0.8)', 'rgba(255, 153, 204, 0.8)',
+    'rgba(204, 0, 51, 0.8)', 'rgba(255, 51, 153, 0.8)'
+];
+
+function showTip() {
+    const tip = document.createElement('div');
+    tip.className = 'tip';
+    tip.innerText = tips[Math.floor(Math.random() * tips.length)];
+    tip.style.backgroundColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+    const x = Math.random() * (window.innerWidth - 320);
+    const y = Math.random() * (window.innerHeight - 120);
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+    tip.style.transform = `translateY(${Math.random() * 50 - 25}px)`;
+
+    document.body.appendChild(tip);
+    setTimeout(() => {
+        tip.style.opacity = '1';
+        tip.style.transform = `translateY(${Math.random() * 100 - 50}px)`;
+    }, 50);
+
+    setTimeout(() => {
+        tip.style.opacity = '0';
+        setTimeout(() => {
+            tip.remove();
+        }, 500);
+    }, 5500);
+}
+
+// 生成弹窗
+let count = 0;
+const totalTips = 80;
+const interval = setInterval(() => {
+    if(count >= totalTips){
+        clearInterval(interval);
+    } else {
+        showTip();
+        count++;
+    }
+}, 200);
+
+// 音乐播放控制
+window.onload = () => {
+    const bgm = document.getElementById('bgm');
+    const playBtn = document.createElement('button');
+    playBtn.className = 'play-btn';
+    playBtn.innerText = '点击播放《爱的魔法》';
+    playBtn.onclick = () => {
+        bgm.play().catch(err => {
+            console.log('播放失败：', err);
+        });
+        playBtn.remove();
+    };
+    document.body.appendChild(playBtn);
+};
+</script>
+
+</body>
+</html>
