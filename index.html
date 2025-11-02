@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>爱的魔法·温馨祝福</title>
+<title>子怡天天开心·专属祝福</title>
 <style>
   body {
     background-color: #000;
@@ -10,6 +10,16 @@
     font-family: "Arial", sans-serif;
     margin: 0;
     padding: 0;
+  }
+  /* 五彩粒子背景容器（全屏） */
+  #particleBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 5; /* 低于弹窗和按钮 */
+    pointer-events: none; /* 不影响点击交互 */
   }
   .tip {
     position: absolute;
@@ -20,108 +30,304 @@
     max-width: 300px;
     text-align: center;
     word-wrap: break-word;
-    box-shadow: 0 0 15px rgba(255, 51, 102, 0.5);
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
     opacity: 0;
     transition: opacity 0.5s, transform 6s ease-in-out;
+    z-index: 20;
   }
-  .play-btn {
+  /* 主播放按钮（居中大尺寸，多彩发光） */
+  .main-play-btn {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    background-color: rgba(255, 51, 102, 0.8);
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 18px 36px;
+    background: linear-gradient(45deg, #ff6b6b, #ffd166, #06d6a0, #118ab2);
+    background-size: 400% 400%;
     color: white;
     border: none;
-    border-radius: 20px;
-    font-size: 16px;
-    box-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+    border-radius: 30px;
+    font-size: 22px;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
     cursor: pointer;
     z-index: 999;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: gradientShift 8s ease infinite;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .main-play-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+  }
+  /* 状态提示 */
+  .status {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #f0f0f0;
+    font-size: 16px;
+    background: rgba(0,0,0,0.7);
+    padding: 8px 15px;
+    border-radius: 20px;
+    z-index: 999;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+  /* 本地音频控制器（隐藏） */
+  .audio-control {
+    display: none;
   }
 </style>
 </head>
 <body>
 
-<audio id="bgm" loop>
-  <!-- 请替换为“爱的魔法”音频的实际可访问链接 -->
-  <source src="https://example.com/love_magic.mp3" type="audio/mpeg">
-  您的浏览器不支持音频播放
-</audio>
+<!-- 全屏五彩粒子背景容器 -->
+<div id="particleBackground"></div>
+
+<!-- 本地音频（love.mp3） -->
+<audio id="localAudio" class="audio-control" loop preload="auto">
+  <source src="love.mp3" type="audio/mpeg">
+  您的浏览器不支持音频播放，请升级浏览器！
+ ></audio>
+
+<div class="status" id="status">点击下面播放按钮哦～～</div>
+<button class="main-play-btn" id="mainPlayBtn">
+  🎵 播放音乐 + 启动缤纷效果
+</button>
 
 <script>
+// 「子怡天天开心」专属祝福文案
 const tips = [
-    '愿爱如魔法，时刻围绕你身旁！',
-    '爱的魔法，让每一天都闪耀！',
-    '愿魔法般的爱，填满你的世界！',
-    '爱的魔法，让平凡变浪漫！',
-    '愿你被爱的魔法温柔守护！',
-    '爱的魔法，让心跳都变甜！',
-    '愿魔法之爱，伴你岁岁年年！',
-    '爱的魔法，让生活如诗如画！',
-    '愿你是爱的魔法，点亮他人的光！',
-    '爱的魔法，让每个瞬间都难忘！'
+    '子怡，愿你天天开心，笑容常在！',
+    '子怡宝贝，每天都要元气满满呀！',
+    '子怡，平安喜乐，万事顺意！',
+    '愿子怡的每一天都甜甜蜜蜜！',
+    '子怡，被幸福和快乐紧紧包围！',
+    '子怡，烦恼退散，好运连连！',
+    '愿子怡永远开心，无忧无虑！',
+    '子怡，每天都有新惊喜，好心情！',
+    '子怡，生活明朗，万物可爱，天天开心！',
+    '愿子怡的世界永远充满阳光和欢笑！',
+    '子怡，开心是第一要务，每天都要快乐！',
+    '子怡，愿你被世界温柔以待，天天开心！',
+    '子怡，每一个日子都闪闪发光，开心相伴！',
+    '愿子怡笑容灿烂，天天都有好心情！',
+    '子怡，平安健康，开心每一天！'
 ];
 
-const bgColors = [
-    'rgba(255, 51, 102, 0.8)', 'rgba(255, 102, 153, 0.8)',
-    'rgba(255, 0, 51, 0.8)', 'rgba(255, 153, 204, 0.8)',
-    'rgba(204, 0, 51, 0.8)', 'rgba(255, 51, 153, 0.8)'
+// 一、多彩祝福弹窗（和谐配色，符合大众审美）
+// 优化配色方案：柔和马卡龙色系+明亮糖果色，避免刺眼
+const tipColors = [
+    'rgba(255, 105, 180, 0.85)', // 粉紫
+    'rgba(100, 149, 237, 0.85)', // 天蓝
+    'rgba(60, 179, 113, 0.85)',  // 薄荷绿
+    'rgba(255, 165, 0, 0.85)',   // 橙黄
+    'rgba(153, 102, 255, 0.85)', // 淡紫
+    'rgba(255, 99, 71, 0.85)',   // 番茄红
+    'rgba(46, 139, 87, 0.85)',   // 海绿
+    'rgba(238, 130, 238, 0.85)', // 浅紫
+    'rgba(255, 215, 0, 0.85)',   // 金黄
+    'rgba(173, 216, 230, 0.85)'  // 浅蓝
 ];
 
 function showTip() {
     const tip = document.createElement('div');
     tip.className = 'tip';
     tip.innerText = tips[Math.floor(Math.random() * tips.length)];
-    tip.style.backgroundColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+    // 随机选择和谐配色，搭配对应发光阴影
+    const color = tipColors[Math.floor(Math.random() * tipColors.length)];
+    tip.style.backgroundColor = color;
+    // 阴影颜色与背景色呼应，增强立体感
+    const shadowColor = color.replace('0.85)', '0.6)');
+    tip.style.boxShadow = `0 0 15px ${shadowColor}, 0 0 8px rgba(255, 255, 255, 0.4)`;
 
     const x = Math.random() * (window.innerWidth - 320);
     const y = Math.random() * (window.innerHeight - 120);
     tip.style.left = x + 'px';
     tip.style.top = y + 'px';
-    tip.style.transform = `translateY(${Math.random() * 50 - 25}px)`;
+    tip.style.transform = `translateY(${Math.random() * 50 - 25}px) scale(0.9)`;
 
     document.body.appendChild(tip);
     setTimeout(() => {
         tip.style.opacity = '1';
-        tip.style.transform = `translateY(${Math.random() * 100 - 50}px)`;
+        tip.style.transform = `translateY(${Math.random() * 100 - 50}px) scale(1)`;
     }, 50);
 
     setTimeout(() => {
         tip.style.opacity = '0';
+        tip.style.transform = `translateY(${Math.random() * 100 - 50}px) scale(0.9)`;
         setTimeout(() => {
             tip.remove();
         }, 500);
     }, 5500);
 }
 
-// 生成弹窗
-let count = 0;
-const totalTips = 80;
-const interval = setInterval(() => {
-    if(count >= totalTips){
-        clearInterval(interval);
-    } else {
-        showTip();
-        count++;
-    }
-}, 200);
+function startTips() {
+    let count = 0;
+    const totalTips = 80;
+    const interval = setInterval(() => {
+        if(count >= totalTips){
+            clearInterval(interval);
+        } else {
+            showTip();
+            count++;
+        }
+    }, 200);
+}
 
-// 音乐播放控制
+// 二、五彩动态粒子背景（和谐配色+灵动效果）
+class ColorfulParticle {
+    constructor(container) {
+        this.container = container;
+        this.element = document.createElement('div');
+        this.init();
+        // 粒子动态属性
+        this.speedX = (Math.random() - 0.5) * 0.4; // 缓慢移动
+        this.speedY = (Math.random() - 0.5) * 0.4;
+        this.flashRate = Math.random() * 800 + 600; // 柔和闪烁频率
+        this.lastFlash = Date.now();
+    }
+
+    init() {
+        // 粒子大小：2~5px，精致不突兀
+        const size = Math.random() * 3 + 2;
+        this.element.style.position = 'absolute';
+        this.element.style.width = `${size}px`;
+        this.element.style.height = `${size}px`;
+        this.element.style.borderRadius = '50%';
+
+        // 五彩配色方案：柔和马卡龙色系，避免高饱和刺眼
+        const colorPalettes = [
+            [255, 192, 203], // 粉红
+            [173, 216, 230], // 浅蓝
+            [144, 238, 144], // 浅绿
+            [255, 215, 0],   // 金黄
+            [238, 130, 238], // 浅紫
+            [255, 248, 220], // 米色
+            [204, 255, 204], // 薄荷绿
+            [255, 228, 196]  // 桃色
+        ];
+        const [r, g, b] = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
+        this.baseAlpha = Math.random() * 0.3 + 0.4; // 透明度0.4~0.7，柔和不突兀
+        this.element.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${this.baseAlpha})`;
+
+        // 对应颜色的柔和发光，增强氛围
+        this.element.style.boxShadow = `0 0 6px rgba(${r}, ${g}, ${b}, 0.8), 0 0 3px rgba(255, 255, 255, 0.5)`;
+
+        // 随机初始位置（全屏均匀分布）
+        this.x = Math.random() * window.innerWidth;
+        this.y = Math.random() * window.innerHeight;
+        this.element.style.left = `${this.x}px`;
+        this.element.style.top = `${this.y}px`;
+
+        this.container.appendChild(this.element);
+    }
+
+    // 缓慢移动+边界反弹
+    move() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        // 边界反弹，避免粒子消失
+        if (this.x < 0 || this.x > window.innerWidth) this.speedX *= -1;
+        if (this.y < 0 || this.y > window.innerHeight) this.speedY *= -1;
+
+        this.element.style.left = `${this.x}px`;
+        this.element.style.top = `${this.y}px`;
+    }
+
+    // 柔和闪烁（透明度渐变，不突兀）
+    flash() {
+        const now = Date.now();
+        if (now - this.lastFlash > this.flashRate) {
+            const targetAlpha = Math.random() > 0.5 ? this.baseAlpha * 1.5 : this.baseAlpha * 0.6;
+            // 渐变过渡，避免生硬切换
+            this.element.style.transition = 'background-color 0.3s ease';
+            this.element.style.backgroundColor = this.element.style.backgroundColor.replace(
+                /rgba\((\d+), (\d+), (\d+), [^)]+\)/,
+                `rgba($1, $2, $3, ${targetAlpha})`
+            );
+            this.lastFlash = now;
+            // 重置过渡，避免影响移动
+            setTimeout(() => {
+                this.element.style.transition = 'none';
+            }, 300);
+        }
+    }
+
+    // 帧更新
+    update() {
+        this.move();
+        this.flash();
+    }
+}
+
+// 创建五彩粒子背景（粒子数量350，分布均匀）
+function createColorfulParticleBackground() {
+    const container = document.getElementById('particleBackground');
+    const particleCount = 350;
+    const particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new ColorfulParticle(container));
+    }
+
+    // 流畅动画循环
+    function animate() {
+        particles.forEach(particle => particle.update());
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+// 三、核心控制：音乐+五彩粒子+多彩弹窗联动
 window.onload = () => {
-    const bgm = document.getElementById('bgm');
-    const playBtn = document.createElement('button');
-    playBtn.className = 'play-btn';
-    playBtn.innerText = '点击播放《爱的魔法》';
-    playBtn.onclick = () => {
-        bgm.play().catch(err => {
-            console.log('播放失败：', err);
-        });
-        playBtn.remove();
-    };
-    document.body.appendChild(playBtn);
+    const localAudio = document.getElementById('localAudio');
+    const mainPlayBtn = document.getElementById('mainPlayBtn');
+    const status = document.getElementById('status');
+    let isInitiated = false;
+
+    // 音频加载状态提示
+    localAudio.addEventListener('loadeddata', () => {
+        status.textContent = '音乐已就绪，点击按钮开启缤纷浪漫效果～';
+    });
+
+    localAudio.addEventListener('error', () => {
+        status.textContent = '未找到love.mp3，请检查文件路径！';
+    });
+
+    // 主按钮点击事件
+    mainPlayBtn.addEventListener('click', () => {
+        if (!isInitiated) {
+            // 1. 播放本地音乐
+            localAudio.play().then(() => {
+                // 2. 创建五彩粒子背景
+                createColorfulParticleBackground();
+                // 3. 启动多彩祝福弹窗
+                startTips();
+                // 4. 更新状态和按钮
+                status.textContent = '🎶 给子怡做的第一个网页，希望你醒来看到时心情是非常开心的';
+                mainPlayBtn.innerText = '正在派送美好祝福...';
+                mainPlayBtn.disabled = true;
+                mainPlayBtn.style.opacity = '0.8';
+                isInitiated = true;
+            }).catch(err => {
+                status.textContent = '播放失败，请确保love.mp3在同一文件夹！';
+                console.log('错误原因：', err);
+            });
+        }
+    });
 };
 </script>
-
 </body>
 </html>
